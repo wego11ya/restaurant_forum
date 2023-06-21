@@ -1,4 +1,4 @@
-const { Restaurant } = require('../models')
+const { Restaurant, User } = require('../models')
 const { localFileHandler } = require('../helpers/file-helpers')
 const adminController = {
   getRestaurants: (req, res, next) => {
@@ -36,7 +36,6 @@ const adminController = {
       raw: true // 找到以後整理格式再回傳
     })
       .then(restaurant => {
-        console.log(restaurant)
         if (!restaurant) throw new Error("Restaurant didn't exist!") //  如果找不到，回傳錯誤訊息，後面不執行
         res.render('admin/restaurant', { restaurant })
       })
@@ -84,6 +83,29 @@ const adminController = {
         return restaurant.destroy()
       })
       .then(() => res.redirect('/admin/restaurants'))
+      .catch(err => next(err))
+  },
+  getUsers: (req, res, next) => {
+    User.findAll({
+      raw: true
+    })
+      .then(users => res.render('admin/users', { users }))
+      .catch(err => next(err))
+  },
+  patchUser: (req, res, next) => {
+    User.findByPk(req.params.id)
+      .then(user => {
+        if (!user) throw new Error("User doesn't exist!") //  如果找不到，回傳錯誤訊息，後面不執行
+        if (user.email === 'root@example.com') {
+          req.flash('error_messages', 'Warning: You can not alter root account\'s authorization')
+          return res.redirect('/admin/users')
+        }
+        user.update({
+          isAdmin: !user.isAdmin
+        })
+        req.flash('success_messages', 'user authorization has been successfully updated')
+        res.redirect('/admin/users')
+      })
       .catch(err => next(err))
   }
 }
