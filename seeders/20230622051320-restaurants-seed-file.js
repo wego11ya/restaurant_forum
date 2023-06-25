@@ -6,7 +6,6 @@ module.exports = {
       'SELECT id FROM Categories;',
       { type: queryInterface.sequelize.QueryTypes.SELECT }
     )
-    console.log(categories)
     await queryInterface.bulkInsert('Restaurants',
       Array.from({ length: 50 }, () => ({
         name: faker.name.findName(),
